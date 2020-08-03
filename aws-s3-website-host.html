@@ -73,7 +73,7 @@
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-2-1">Create www & non-www</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-2-2">Redirect non-www to www</a></li>
 					<li class="nav-item"><a class="nav-link scrollto" href="#item-2-3">Upload files to bucket</a></li>
-					<li class="nav-item"><a class="nav-link scrollto" href="#item-2-3">Make www bucket public</a></li>
+					<li class="nav-item"><a class="nav-link scrollto" href="#item-2-4">Make www bucket public</a></li>
 				    <li class="nav-item section-title mt-3"><a class="nav-link scrollto" href="#section-3"><span class="theme-icon-holder mr-2"><i class="fas fa-box"></i></span>Set up Route 53</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-3-1">Create hosted zone</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-3-2">Add NameServer</a></li>
@@ -128,37 +128,79 @@
 					</section><!--//section-->
 					
 					<section class="docs-section" id="item-2-2">
-						<h2 class="section-heading">Configure non-www bucket to redirect to www bucket</h2>
-						<img src="assets/images/aws/redirect_to_www.png" width="1350" height="700"/>
+						<h2 class="section-heading">Re-direct non-www bucket to www bucket</h2>
+						<img src="assets/images/aws/redirect_to_www.png" width="1050" height="500"/>
 					</section><!--//section-->
 					
 					<section class="docs-section" id="item-2-3">
-						<h2 class="section-heading">Upload  static files to bucket</h2>
-						<p>Upload your web content files to www bucket</p>
+						<h2 class="section-heading">Upload static files to bucket</h2>
+						<p style="margin-left: 40px">Upload all your web content files to www bucket</p>
+					</section><!--//section-->
+
+					<section class="docs-section" id="item-2-4">
+						<h2 class="section-heading">Make WWW bucket public</h2>
+						<p>To make bucket public Go to -> Permission -> Un-check "Block All" public access</p>
+						<img src="assets/images/aws/make_public_access.png" width="1050" height="500"/>
+						<br/>	<br/>	<br/>
+						<p>Next, add the policy to the bucket in <a href="#bucket-policy" class="btn btn-light">Bucket policy</a></p>
+						<pre id = "bucket-policy" class="shadow-lg rounded">
+							<code class="html">
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "PublicReadGetObject",
+			"Effect":"Allow",
+			"Principal": "*",
+			"Action": "s3:GetObject",
+			"Resource": "arn:aws:s3:::www.example.com/*"
+		}
+	]
+}</code>
+						</pre>
+						<img src="assets/images/aws/bucket_public_policy.png" width="1050" height="500"/>
 					</section><!--//section-->
 			    </article><!--//docs-article-->
 			    
 			    
 			    <article class="docs-article" id="section-3">
 				    <header class="docs-header">
-					    <h1 class="docs-heading">Set up Route 53</h1>
+					    <h1 class="docs-heading"></h1>
 					    <section class="docs-intro">
-						    <p>Section intro goes here. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque finibus condimentum nisl id vulputate. Praesent aliquet varius eros interdum suscipit. Donec eu purus sed nibh convallis bibendum quis vitae turpis. Duis vestibulum diam lorem, vitae dapibus nibh facilisis a. Fusce in malesuada odio.</p>
+						    <p>Create AWS route53 public hosted zone</p>
 						</section><!--//docs-intro-->
 				    </header>
 				     <section class="docs-section" id="item-3-1">
-						<h2 class="section-heading">Section Item 3.1</h2>
-						<p>Vivamus efficitur fringilla ullamcorper. Cras condimentum condimentum mauris, vitae facilisis leo. Aliquam sagittis purus nisi, at commodo augue convallis id. Sed interdum turpis quis felis bibendum imperdiet. Mauris pellentesque urna eu leo gravida iaculis. In fringilla odio in felis ultricies porttitor. Donec at purus libero. Vestibulum libero orci, commodo nec arcu sit amet, commodo sollicitudin est. Vestibulum ultricies malesuada tempor.</p>
+						<h2 class="section-heading">Create hosted Zone</h2>
+						<p>Create AWS route53 public hosted zone with the same name as the domain name (Non-WWW).</p>
+						<img src="assets/images/aws/create_hosted_zone.png"/>
 					</section><!--//section-->
 					
 					<section class="docs-section" id="item-3-2">
-						<h2 class="section-heading">Section Item 3.2</h2>
-						<p>Vivamus efficitur fringilla ullamcorper. Cras condimentum condimentum mauris, vitae facilisis leo. Aliquam sagittis purus nisi, at commodo augue convallis id. Sed interdum turpis quis felis bibendum imperdiet. Mauris pellentesque urna eu leo gravida iaculis. In fringilla odio in felis ultricies porttitor. Donec at purus libero. Vestibulum libero orci, commodo nec arcu sit amet, commodo sollicitudin est. Vestibulum ultricies malesuada tempor.</p>
+						<h2 class="section-heading">Add Nameserver</h2>
+						<p>Copy the name server from AWS and Update it in GoDaddy NS [without ending dot(.)].</p>
+						<img src="assets/images/aws/nameserver.png" width="1050"/>
 					</section><!--//section-->
 					
 					<section class="docs-section" id="item-3-3">
-						<h2 class="section-heading">Section Item 3.3</h2>
-						<p>Vivamus efficitur fringilla ullamcorper. Cras condimentum condimentum mauris, vitae facilisis leo. Aliquam sagittis purus nisi, at commodo augue convallis id. Sed interdum turpis quis felis bibendum imperdiet. Mauris pellentesque urna eu leo gravida iaculis. In fringilla odio in felis ultricies porttitor. Donec at purus libero. Vestibulum libero orci, commodo nec arcu sit amet, commodo sollicitudin est. Vestibulum ultricies malesuada tempor.</p>
+						<h2 class="section-heading">Create "A" Record</h2>
+						<p>Create A Type recordset for the non-www domain</p>		
+						<ol>
+							<li>Click on "Create Record" -> "Simple Routing" -> "Define simple record"</li>
+							<li>Alias to S3 website endpoint,</li>
+							<li>Select the region of your bucket</li>
+							<li>Select your S3 main bucket (i.e non-www domain)</li>
+						</ol>
+						<img src="assets/images/aws/non-www_A_record.png"/>
+						<p>Create A Type recordset for www subdomain</p>
+						<ol>
+							<li>Alias to S3 website endpoint,</li>
+							<li>Select the region of your bucket</li>
+							<li>Select your S3 www bucket (i.e www domain)</li>
+						</ol>
+						<img src="assets/images/aws/www_A_record.png"/>
+						<br>
+						<p>Go to your browser and access the website</p>
 					</section><!--//section-->
 			    </article><!--//docs-article-->
 			    
