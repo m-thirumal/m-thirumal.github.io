@@ -85,11 +85,26 @@
 		    <div class="container">
 			    <article class="docs-article" id="section-1">
 				    <header class="docs-header">
-					    <h1 class="docs-heading">Prerequisite<span class="docs-time">Last updated: 2020-08-08</span></h1>
+					    <h1 class="docs-heading">PostgreSQL Tuning<span class="docs-time">Last updated: 2020-08-08</span></h1>
 					    <section class="docs-intro">
+							<p>PostgreSQL's architecture is based on three fundamental parts: <i>Processes, Memory, and Disk.</i></p>
+							<p>The memory can be classified into two categories:</p>
 							<ul>
-								<li>Database Knowledge</li>
-								<li>PostgreSQL</li>
+								<li>Local Memory
+									<ul>
+										<li class="nav-item"><a class="nav-link scrollto" href="#item-1-3">work_mem</a></li>
+										<li class="nav-item"><a class="nav-link scrollto" href="#item-1-6">maintenance_work_mem</a></li> 
+										<li class="nav-item"><a class="nav-link scrollto" href="#item-1-5">temp_buffers</a></li> 
+									</ul>
+								</li>
+
+								<li>Shared Memory
+									<ul>
+										<li class="nav-item"><a class="nav-link scrollto" href="#item-1-2">shared_buffers</a></li>
+										<li class="nav-item"><a class="nav-link scrollto" href="#item-1-8">wal_buffers</a></li> 
+										<li>   Commit log</li>
+									</ul>
+								</li>
 							</ul>
 						</section><!--//docs-intro-->
 						
@@ -131,25 +146,47 @@
                         </div><!--//callout-block-->
 					</section><!--//section-->
 					
-<!-- 					<section class="docs-section" id="item-1-3">
-						<h2 class="section-heading">Verify DNS</h2>
-						<p>After running the above command it will ask you to add `TXT record` to your DNS before pressing enter.</p>
-						<h5>Login to your Domain provider (Godaddy/AWS Route 53) to add DNS TXT records.</h5>
-						<ol class="list list-unstyled pl-0">
-							<li><code>Record name : _acme-challenge.example.com.</code></li>
-							<li><code>Recort type : txt</code></li>
-							<li><code>Value/Route Traffic ===> IP address or another ... : {displayed in the terminal}</code></li>
-						</ol>
-						<img src="img/add_record_txt_to_aws.png"/>
+ 					<section class="docs-section" id="item-1-3">
+						<h2 class="section-heading">work_mem</h2>
+						<p>If you do a lot of <i>complex sorts</i>, and have a lot of memory, then increasing the <i>work_mem</i> parameter allows PostgreSQL to do larger in-memory sorts which, unsurprisingly, will be faster than disk-based equivalents. </p>
+						<p>It specifies the amount of memory that will be used by the <i>ORDER BY, DISTINCT and JOIN</i> before writing to the temporary files on disk. </p>
+						<p>As with the <i>shared_buffers</i>, if we configure this parameter too low, we can have more operations going into disk, but too high is dangerous for the memory usage. </p>
+						<p>The default value is <code>4 MB.</code></p>
+						<p>This size is applied to each and every sort done by each user, and complex queries can use multiple working memory sort buffers. Set it to 50MB, and have 30 users submitting queries, and you are soon using 1.5GB of real memory. Furthermore, if a query involves doing merge sorts of 8 tables, that requires 8 times work_mem. You need to consider what you set max_connections to in order to size this parameter correctly. This is a setting where data warehouse systems, where users are submitting very large queries, can readily make use of many gigabytes of memory. </p>
+						<p>log_temp_files can be used to log sorts, hashes, and temp files which can be useful in figuring out if sorts are spilling to disk instead of fitting in memory. You can see sorts spilling to disk using EXPLAIN ANALYZE plans as well. For example, if you see a line like Sort Method: external merge Disk: 7526kB in the output of EXPLAIN ANALYZE, a work_mem of at least 8MB would keep the intermediate data in memory and likely improve the query response time (although it may take substantially more than 8MB to do the sort entirely in memory, as data on disk is stored in a more compact format). </p>
 					</section>
-					<section class="docs-section" id="item-1-4"> 
-					<h2 class="section-heading">Check PEM files</h2>
-						<p>Return to your Terminal and press enter to validate and to generate the TLS</p>
-						<p>It will generate few folders which similar to the image</p>
-						<img src="img/folder_structure.png"/>
-						<br><br>
-						<p>PEM files can be found in <code>....\archive\website domain name\</code></p>
-					</section>//section -->
+				   <section class="docs-section" id="item-1-4"> 
+					    <h2 class="section-heading">max_connections</h2>
+						<p><i>max_connections </i>sets exactly that: the maximum number of client connections allowed. </p>
+						<p>This is very important to some of the below parameters (particularly work_mem) because there are some memory resources that are or can be allocated on a per-client basis, so the maximum number of clients suggests the maximum possible memory use.</p>
+						<p>PostgreSQL on good hardware can support a few hundred connections. If you want to have thousands instead, you should consider using <i>connection pooling software</i> to reduce the connection overhead.</p>
+						<p>The default value is <code>100.</code></p>
+					</section>
+					<section class="docs-section" id="item-1-5"> 
+					    <h2 class="section-heading">temp_buffers</h2>
+						<p>The temporary buffers are used to store the temporary tables used in each session.</p>
+						<p>This parameter sets the maximum amount of memory for this task.</p>
+						<p>The default value is <code>8 MB.</code></p>
+					</section>
+					<section class="docs-section" id="item-1-6"> 
+					    <h2 class="section-heading">maintenance_work_mem</h2>
+						<p>Specifies the maximum amount of memory to be used by maintenance operations, such as <code>VACUUM, CREATE INDEX, and ALTER TABLE ADD FOREIGN KEY</code></p>
+						<p>Since only one of these operations can be executed at a time by a database session, and an installation normally doesn't have many of them running concurrently, it's safe to set this value significantly larger than work_mem.</p>
+						<p>Larger settings might improve performance for vacuuming and for restoring database dumps.</p>
+						<p>The default value is <code>64 MB.</code></p>
+					</section>
+					<section class="docs-section" id="item-1-7"> 
+					    <h2 class="section-heading">autovacuum_work_mem</h2>
+						<p>The vacuum uses the maintenance_work_mem by default, but we can separate it using this parameter.</p>
+						<p>We can specify the maximum amount of memory to be used by each autovacuum worker here.</p>
+					</section>
+					<section class="docs-section" id="item-1-8"> 
+					    <h2 class="section-heading">wal_sync_method & wal_buffers</h2>
+						<p>The amount of shared memory used for WAL data that has not yet been written to disk. </p>
+						<p>The default setting is <code>3% or 1/32 </code>of shared_buffers, but not less than <code>64kB</code> nor more than the size of one WAL segment, typically <code>16MB.</code></p>
+						<p>Larger settings might improve performance for vacuuming and for restoring database dumps.</p>
+						<p>The default value is <code>64 MB.</code></p>
+					</section>
 					
 			    </article>
 			    
