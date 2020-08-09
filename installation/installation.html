@@ -82,7 +82,8 @@
 				    <li class="nav-item section-title mt-3"><a class="nav-link scrollto" href="#section-2"><span class="theme-icon-holder mr-2"><i class="fas fa-arrow-down"></i></span>PGAdmin</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-2-1">PgAdmin 4 on docker</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-2-2">PgAdmin on Apache2</a></li>
-				    <li class="nav-item"><a class="nav-link scrollto" href="#item-2-3">Reverse Proxy</a></li>
+					<li class="nav-item"><a class="nav-link scrollto" href="#item-2-3">Reverse Proxy</a></li>
+					<li class="nav-item"><a class="nav-link scrollto" href="#item-2-4">Update docker image</a></li>
 				    <li class="nav-item section-title mt-3"><a class="nav-link scrollto" href="#section-3"><span class="theme-icon-holder mr-2"><i class="fas fa-box"></i></span>PgModeler</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-3-1">Section Item 3.1</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-3-2">Section Item 3.2</a></li>
@@ -179,24 +180,119 @@
 			    <article class="docs-article" id="section-2">
 				    <header class="docs-header">
 					    <h1 class="docs-heading">PgAdmin 4 on Docker</h1>
-					    <section class="docs-intro">
-						    <p>Section intro goes here. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque finibus condimentum nisl id vulputate. Praesent aliquet varius eros interdum suscipit. Donec eu purus sed nibh convallis bibendum quis vitae turpis. Duis vestibulum diam lorem, vitae dapibus nibh facilisis a. Fusce in malesuada odio.</p>
+					    <section class="docs-intro" id="item-2-1">
+						    <h1 id="install-configure-pgadmin-4-using-docker">Install &amp; Configure PgAdmin 4 on docker</h1>
+							<ol style="list-style-type: decimal">
+								<li>
+									<p>
+										<a href="#section-1">Install PostgreSQL</a>
+									</p>
+								</li>
+								<li>
+									<p>Set up docker <br><br><code>sudo apt install docker.io</code></p>
+								</li>
+								<li>Pull pgadmin4 image <br><br><code>sudo docker pull dpage/pgadmin4</code></li>
+								<li>Create a directory in the host to store session data of PgAdmin4 <br><code>sudo mkdir /var/lib/pgadmin</code></li>
+								<li>Map to Pgadmin user &amp; group 5050 <br><br><code>sudo chown -R 5050:5050 /var/lib/pgadmin/</code></li>
+								<li>
+									<p>Finally run the docker image <br><br><code>sudo docker run --name pgadmin -p 80:80 -v /var/lib/pgadmin:/var/lib/pgadmin  -e 'PGADMIN_DEFAULT_EMAIL=m.thirumal@hotmail.com' -e 'PGADMIN_DEFAULT_PASSWORD=thirumal' -d dpage/pgadmin4</code></p>
+								</li>
+							</ol>
+							<p>&nbsp; &nbsp; &nbsp; or <br>
+								<a href="Reverse_Proxying_with_ngnix.md">&nbsp;&nbsp;For Reverse Proxy</a>
+							</p>
+							<pre><code>sudo docker run --name pgadmin -p 5050:80 -v /var/lib/pgadmin:/var/lib/pgadmin  -e &#39;PGADMIN_DEFAULT_EMAIL=m.thirumal@hotmail.com&#39; -e &#39;PGADMIN_DEFAULT_PASSWORD=thirumal&#39; -d dpage/pgadmin4</code></pre>
+							<ol start="7" style="list-style-type: decimal">
+								<li><p>Enter your IP address in the browser to access pgadmin4</p></li>
+								<li><p>Create server with host name/address <code>172.17.0.1</code></p>
+								<div class="figure">
+								<img src="img/172.17.0.1.png" alt="172.17.0.1" width="1050" height="500"/>
+								</div></li>
+								<li><p>To start docker container</p>
+								<p><code>sudo docker start pgadmin</code></p></li>
+							</ol>
+							<div class="figure">
+							<img src="img/Pgadmin4.png" alt="output" width="1050" height="500"/>
+							</div>
+							<ol start="10" style="list-style-type: decimal">
+							<li><a href="Reverse_Proxying_with_ngnix.md">Set up Reverse Proxy with Ngnix</a></li>
+							</ol>
 						</section><!--//docs-intro-->
+						<section class="docs-section" id="item-2-2">
+							<h1 id="install-pgadmin-4-using-apache2-in-ubuntu">Install PgAdmin 4 using Apache2 in Ubuntu</h1>
+							<ol style="list-style-type: decimal">
+								<li>Add GPG key and repository<br/><br/>
+									<code>sudo apt-get install wget ca-certificates  <br/> <br/> 
+									 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - 
+									 <br/> <br/>  sudo sh -c 'echo &quot;deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main&quot; &gt;&gt; /etc/apt/sources.list.d/pgdg.list'</code>
+								</li>
+								<li>
+									<p>Install PgAdmin4 &amp; apache2 with default e-mail/user-id and password
+									</p>
+									
+								<pre><code> sudo apt-get install pgadmin4 pgadmin4-apache2 </code></pre>
+								<p>Enter email &amp; password to complete the installation process</p></li>
+								<li><p>Go to <a href="browser">http://localhost/pgadmin4</a> and login with email &amp; password which you have given in the installation process</p></li>
+							</ol>
+							<div class="figure">
+							<img src="img/Pgadmin4.png" alt="output" width="1050" height="500"/>
+							</div>
+						</section>
+						<section class="docs-section" id="item-2-3">
+							<h1 id="reverse-proxying-for-pgadmin-4">Reverse Proxying for Pgadmin 4</h1>
+							<ol>
+								<li>
+									<a href="item-2-1">Set up Pgamin4 in Docker</a>
+								</li>
+								<li>
+									HTTP via Nginx
+									<p>Add the following code inside http{} in <code>/et/ngnix/ngnix.config</code> and replace <code>{SERVER_IP}</code> with server ip address</p>
+<pre><code>server {
+	listen 80;
+	server_name {SERVER_IP}
+	location /pgadmin4/ {
+		proxy_set_header X-Script-Name /pgadmin4;
+		proxy_set_header Host $host;
+		proxy_pass http://localhost:5050/;
+		proxy_redirect off;
+	}
+}</code></pre>
+								</li>
+								<li>
+									HTTPS via Nginx
+								</li>
+							</ol>
+						</section>
+						<section class="docs-section" id="item-2-4">
+							<h1 id="update-pgadmin4-docker-image">Update PgAdmin4 docker image</h1>
+							<ol style="list-style-type: decimal">
+								<li>Pull the latest docker image</li>
+							</ol>
+							<pre><code> sudo docker pull dpage/pgadmin4</code></pre>
+							<ol start="2" style="list-style-type: decimal">
+								<li>Stop the running container</li>
+							</ol>
+							<pre><code>sudo docker stop pgadmin</code></pre>
+							<ol start="3" style="list-style-type: decimal">
+								<li>Remove existing container</li>
+							</ol>
+							<pre><code> sudo docker rm pgadmin</code></pre>
+							<ol start="4" style="list-style-type: decimal">
+								<li>Run the latest images</li>
+							</ol>
+							<pre><code> sudo docker run --name pgadmin -p 80:80 -v /var/lib/pgadmin:/var/lib/pgadmin  -e &#39;PGADMIN_DEFAULT_EMAIL=m.thirumal@hotmail.com&#39; -e &#39;PGADMIN_DEFAULT_PASSWORD=thirumal&#39; -d dpage/pgadmin4</code></pre>
+							<p>or the below command for reverse proxy with ngnix</p>
+							<pre><code>sudo docker run --name pgadmin -p 5050:80 -v /var/lib/pgadmin:/var/lib/pgadmin  -e &#39;PGADMIN_DEFAULT_EMAIL=m.thirumal@hotmail.com&#39; -e &#39;PGADMIN_DEFAULT_PASSWORD=thirumal&#39; -d dpage/pgadmin4</code></pre>
+							<ol start="5" style="list-style-type: decimal">
+								<li><p>To start docker container</p>
+								<p><code>sudo docker start pgadmin</code></p></li>
+							</ol>
+							<div class="figure">
+							<img src="img/Pgadmin4.png" alt="output" width="1050" height="500"/>
+							</div>
+						</section>
 				    </header>
-				     <section class="docs-section" id="item-2-1">
-						<h2 class="section-heading">Section Item 2.1</h2>
-						<p>Vivamus efficitur fringilla ullamcorper. Cras condimentum condimentum mauris, vitae facilisis leo. Aliquam sagittis purus nisi, at commodo augue convallis id. Sed interdum turpis quis felis bibendum imperdiet. Mauris pellentesque urna eu leo gravida iaculis. In fringilla odio in felis ultricies porttitor. Donec at purus libero. Vestibulum libero orci, commodo nec arcu sit amet, commodo sollicitudin est. Vestibulum ultricies malesuada tempor.</p>
-					</section><!--//section-->
-					
-					<section class="docs-section" id="item-2-2">
-						<h2 class="section-heading">Section Item 2.2</h2>
-						<p>Vivamus efficitur fringilla ullamcorper. Cras condimentum condimentum mauris, vitae facilisis leo. Aliquam sagittis purus nisi, at commodo augue convallis id. Sed interdum turpis quis felis bibendum imperdiet. Mauris pellentesque urna eu leo gravida iaculis. In fringilla odio in felis ultricies porttitor. Donec at purus libero. Vestibulum libero orci, commodo nec arcu sit amet, commodo sollicitudin est. Vestibulum ultricies malesuada tempor.</p>
-					</section><!--//section-->
-					
-					<section class="docs-section" id="item-2-3">
-						<h2 class="section-heading">Section Item 2.3</h2>
-						<p>Vivamus efficitur fringilla ullamcorper. Cras condimentum condimentum mauris, vitae facilisis leo. Aliquam sagittis purus nisi, at commodo augue convallis id. Sed interdum turpis quis felis bibendum imperdiet. Mauris pellentesque urna eu leo gravida iaculis. In fringilla odio in felis ultricies porttitor. Donec at purus libero. Vestibulum libero orci, commodo nec arcu sit amet, commodo sollicitudin est. Vestibulum ultricies malesuada tempor.</p>
-					</section><!--//section-->
+				 
 			    </article><!--//docs-article-->
 			    
 			    
