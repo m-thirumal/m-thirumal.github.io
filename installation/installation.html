@@ -211,9 +211,8 @@
 							<h1 id="install-pgadmin-4-using-apache2-in-ubuntu">Install PgAdmin 4 using Apache2 in Ubuntu</h1>
 							<ol style="list-style-type: decimal">
 								<li>Add GPG key and repository<br/><br/>
-									<code>sudo apt-get install wget ca-certificates  <br/> <br/> 
-									 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - 
-									 <br/> <br/>  sudo sh -c 'echo &quot;deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main&quot; &gt;&gt; /etc/apt/sources.list.d/pgdg.list'</code>
+									<pre><code>sudo apt-get install wget ca-certificates<br/> wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - <br/> sudo sh -c 'echo &quot;deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main&quot; &gt;&gt; /etc/apt/sources.list.d/pgdg.list'</code>
+									</pre>
 								</li>
 								<li>
 									<p>Install PgAdmin4 &amp; apache2 with default e-mail/user-id and password
@@ -274,7 +273,7 @@
 							<pre><code>sudo docker run --name pgadmin -p 5050:80 -v /var/lib/pgadmin:/var/lib/pgadmin  -e &#39;PGADMIN_DEFAULT_EMAIL=m.thirumal@hotmail.com&#39; -e &#39;PGADMIN_DEFAULT_PASSWORD=thirumal&#39; -d dpage/pgadmin4</code></pre>
 							<ol start="5" style="list-style-type: decimal">
 								<li><p>To start docker container</p>
-								<p><code>sudo docker start pgadmin</code></p></li>
+								<p><pre><code>sudo docker start pgadmin</code></pre></p></li>
 							</ol>
 							<div class="figure">
 							<img src="img/Pgadmin4.png" alt="output" width="1050" height="500"/>
@@ -311,19 +310,15 @@ sudo apt-get install libpq-dev
 sudo apt-get install libqt5svg5-dev							
 						</code></pre>
 						<p>or install all dependencies in one command line</p>
-						<code>sudo apt-get install build-essential git qtcreator qt5-default qt5-qmake libpq5 libxml2 pkg-config xml2 libxml2-dev libpq-dev libqt5svg5-dev</code>
-	
+						<pre><code>sudo apt-get install build-essential git qtcreator qt5-default qt5-qmake libpq5 libxml2 pkg-config xml2 libxml2-dev libpq-dev libqt5svg5-dev</code></pre>
 						<h4 id="getting-the-source">Getting the source</h4>
 						<p>Clone the PgModeler from github <a href="https://github.com/pgmodeler/pgmodeler.git">https://github.com/pgmodeler/pgmodeler.git</a></p>
-						
-							<code>git clone https://github.com/pgmodeler/pgmodeler.git</code>
-								<br>
-						<code>cd pgmodeler</code>
+						<pre><code>git clone https://github.com/pgmodeler/pgmodeler.git</code><code>cd pgmodeler</code>
+							</pre>
 						<h4 id="build-the-application">Build the application</h4>
 						<p>Once everything is prepared, you can compile and install pgmodeler using the following commands</p>
-						<code>qmake pgmodeler.pro <br>
-						make<br>
-						sudo make install</code>
+						<pre><code>qmake pgmodeler.pro</code><br><code>make</code><br><code>sudo make install</code>
+						</pre>
 						<p>The binary will be available in <em>/usr/local/bin/</em></p>
 						<h4 id="open-pgmodeler">Open PgModeler</h4>
 						<p>Just type the below command in terminal</p>
@@ -355,10 +350,10 @@ XML_LIB = /usr/local/Cellar/libxml2/2.9.10_1/lib/libxml2.dylib
 INCLUDEPATH += $$PGSQL_INC $$XML_INC
 }</code></pre>
 						<p>then, run the below command to build</p>
-						<p><code>/usr/local/opt/qt/bin/qmake -r pgmodeler.pro</code></p>
+						<p><pre><code>/usr/local/opt/qt/bin/qmake -r pgmodeler.pro</code></pre></p>
 						<h4 id="install">Install</h4>
 						<p>Run the below command to install pgModeler in '/Application'</p>
-						<p><code>make &amp;&amp; make install</code></p>
+						<p><pre><code>make &amp;&amp; make install</code><</pre>/p>
 						<p>Go to application and select pgmodeler</p>
 						<p>Enjoy !!!</p>
 						<div class="figure">
