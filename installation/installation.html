@@ -126,52 +126,42 @@
 						
 				    <section class="docs-section" id="item-1-1">
 						<h2 class="section-heading">Enable PostgreSQL Apt Repository</h2>
-						<code>sudo apt-get install wget ca-certificates</code>
-						<br><br>
-						<code>
-							wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-						</code>
-						<br><br>
-						<code>sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'</code>
+						<pre><code>sudo apt-get install wget ca-certificates</code></pre>
+						<pre><code>wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -</code></pre>
+						<pre><code>sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'</code></pre>
+
 					</section><!--//section-->
 					
 					<section class="docs-section" id="item-1-2">
 						<h2 class="section-heading">Install PostgreSQL on Ubuntu</h2>
-						<code>sudo apt-get update</code>
-						<br><br>
-						<code>
-							sudo apt-get install postgresql postgresql-contrib
-						</code>
-						<br><br>
-						<code>
-							sudo  apt-get install postgresql-client
-						</code>        
+						<pre><code>sudo apt-get update</code></pre>
+						<pre><code>sudo apt-get install postgresql postgresql-contrib</code></pre>
+						<pre><code>sudo  apt-get install postgresql-client</code> </pre>     
 					</section><!--//section-->
 					
 					<section class="docs-section" id="item-1-3">
 						<h2 class="section-heading">Alter PostgreSQL password</h2>
-						<code>sudo -u postgres psql</code>
-						<br><br>
-						<code>
-							ALTER USER postgres PASSWORD 'NEWPASSWORD'
-						</code>
+						<pre><code>sudo -u postgres psql</code></pre>
+						<pre><code>ALTER USER postgres PASSWORD 'NEWPASSWORD'</code></pre>
 					</section><!--//section-->
 					
 					<section class="docs-section" id="item-1-4">
 						<h2 class="section-heading">Access PostgreSQL over network
 						</h2>
 						<p>Change listen_address <code>`localhost to *` in  file  /etc/postgresql/{version_number}/main/postgresql.conf </code></p>
-						<code> # - Connection Settings -<br> 
-							listen_addresses = '*'          # what IP address(es) to listen on; </code>
+						<pre><code># - Connection Settings -<br>listen_addresses = '*'          # what IP address(es) to listen on; </code>
+						</pre>
 					</section><!--//section-->
 					<section class="docs-section" id="item-1-5">
 						<h2 class="section-heading">Changes in `pg_hba.conf`</h2>
 						<p>Add the following line in `# IPv4 local connections`:</p>
-						<code>host    all             all             0.0.0.0/0               md5
-						</code>
+						<pre><code>host    all             all             0.0.0.0/0               md5
+							</code>
+						</pre>
 						<p>and comment</p>
-						<code>#host    all             all             127.0.0.1/32            md5
-						</code>
+						<pre><code>#host    all             all             127.0.0.1/32            md5
+							</code>
+						</pre>
 					</section><!--//section-->
 				
 			    </article>
@@ -188,13 +178,13 @@
 									</p>
 								</li>
 								<li>
-									<p>Set up docker <br><br><code>sudo apt install docker.io</code></p>
+									<p>Set up docker <br><pre><code>sudo apt install docker.io</code></pre></p>
 								</li>
-								<li>Pull pgadmin4 image <br><br><code>sudo docker pull dpage/pgadmin4</code></li>
-								<li>Create a directory in the host to store session data of PgAdmin4 <br><code>sudo mkdir /var/lib/pgadmin</code></li>
-								<li>Map to Pgadmin user &amp; group 5050 <br><br><code>sudo chown -R 5050:5050 /var/lib/pgadmin/</code></li>
+								<li>Pull pgadmin4 image <br><br><pre><code>sudo docker pull dpage/pgadmin4</code></pre></li>
+								<li>Create a directory in the host to store session data of PgAdmin4 <br><pre><code>sudo mkdir /var/lib/pgadmin</code></pre></li>
+								<li>Map to Pgadmin user &amp; group 5050 <br><br><pre><code>sudo chown -R 5050:5050 /var/lib/pgadmin/</code></pre></li>
 								<li>
-									<p>Finally run the docker image <br><br><code>sudo docker run --name pgadmin -p 80:80 -v /var/lib/pgadmin:/var/lib/pgadmin  -e 'PGADMIN_DEFAULT_EMAIL=m.thirumal@hotmail.com' -e 'PGADMIN_DEFAULT_PASSWORD=thirumal' -d dpage/pgadmin4</code></p>
+									<p>Finally run the docker image <br><br><pre><code>sudo docker run --name pgadmin -p 80:80 -v /var/lib/pgadmin:/var/lib/pgadmin  -e 'PGADMIN_DEFAULT_EMAIL=m.thirumal@hotmail.com' -e 'PGADMIN_DEFAULT_PASSWORD=thirumal' -d dpage/pgadmin4</code></pre></p>
 								</li>
 							</ol>
 							<p>&nbsp; &nbsp; &nbsp; or <br>
@@ -208,7 +198,7 @@
 								<img src="img/172.17.0.1.png" alt="172.17.0.1" width="1050" height="500"/>
 								</div></li>
 								<li><p>To start docker container</p>
-								<p><code>sudo docker start pgadmin</code></p></li>
+								<p><pre><code>sudo docker start pgadmin</code></pre></p></li>
 							</ol>
 							<div class="figure">
 							<img src="img/Pgadmin4.png" alt="output" width="1050" height="500"/>

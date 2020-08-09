@@ -95,7 +95,7 @@
 						<h2 class="section-heading">Get Certbot docker image</h2>
 						<p>Run the following command in the terminal to get the latest image
 							<br><br>
-							<code>docker pull certbot/certbot</code>
+							<pre><code>docker pull certbot/certbot</code></pre>
 						</p>
                        
 					</section><!--//section-->
@@ -104,7 +104,7 @@
 						<h2 class="section-heading">Run Certbot image</h2>
 						<p>Run the Certbot image with the following command
 							<br><br>
-							<code>docker run -it -v /Users/thirumal/certificate:/etc/letsencrypt certbot/certbot certonly --manual --preferred-challenges dns --email xxxx@YYYY.com --server https://acme-v02.api.letsencrypt.org/directory --agree-tos -d '*.example.com'</code>
+							<pre><code>docker run -it -v /Users/thirumal/certificate:/etc/letsencrypt certbot/certbot certonly --manual --preferred-challenges dns --email xxxx@YYYY.com --server https://acme-v02.api.letsencrypt.org/directory --agree-tos -d '*.example.com'</code></pre>
 						</p>						
 					</section><!--//section-->
 					
@@ -113,9 +113,9 @@
 						<p>After running the above command it will ask you to add `TXT record` to your DNS before pressing enter.</p>
 						<h5>Login to your Domain provider (Godaddy/AWS Route 53) to add DNS TXT records.</h5>
 						<ol class="list list-unstyled pl-0">
-							<li><code>Record name : _acme-challenge.example.com.</code></li>
-							<li><code>Recort type : txt</code></li>
-							<li><code>Value/Route Traffic ===> IP address or another ... : {displayed in the terminal}</code></li>
+							<li><pre><code>Record name : _acme-challenge.example.com.</code></pre></li>
+							<li><pre><code>Recort type : txt</code></pre></li>
+							<li><pre><code>Value/Route Traffic ===> IP address or another ... : {displayed in the terminal}</code></pre></li>
 						</ol>
 						<img src="img/add_record_txt_to_aws.png"/>
 					</section>
@@ -125,7 +125,7 @@
 						<p>It will generate few folders which similar to the image</p>
 						<img src="img/folder_structure.png"/>
 						<br><br>
-						<p>PEM files can be found in <code>....\archive\website domain name\</code></p>
+						<p>PEM files can be found in <pre><code>....\archive\website domain name\</code></pre></p>
 					</section><!--//section-->
 					
 			    </article>
