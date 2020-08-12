@@ -126,17 +126,19 @@
 						
 				    <section class="docs-section" id="item-1-1">
 						<h2 class="section-heading">Enable PostgreSQL Apt Repository</h2>
-						<pre><code>sudo apt-get install wget ca-certificates</code></pre>
-						<pre><code>wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -</code></pre>
-						<pre><code>sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'</code></pre>
+						<pre><code>
+sudo apt-get install wget ca-certificates
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'</code></pre>
 
 					</section><!--//section-->
 					
 					<section class="docs-section" id="item-1-2">
 						<h2 class="section-heading">Install PostgreSQL on Ubuntu</h2>
-						<pre><code>sudo apt-get update</code></pre>
-						<pre><code>sudo apt-get install postgresql postgresql-contrib</code></pre>
-						<pre><code>sudo  apt-get install postgresql-client</code> </pre>     
+						<pre><code>
+sudo apt-get update
+sudo apt-get install postgresql postgresql-contrib
+sudo  apt-get install postgresql-client</code> </pre>     
 					</section><!--//section-->
 					
 					<section class="docs-section" id="item-1-3">
@@ -155,12 +157,11 @@
 					<section class="docs-section" id="item-1-5">
 						<h2 class="section-heading">Changes in `pg_hba.conf`</h2>
 						<p>Add the following line in `# IPv4 local connections`:</p>
-						<pre><code>host    all             all             0.0.0.0/0               md5
-							</code>
-						</pre>
-						<p>and comment</p>
-						<pre><code>#host    all             all             127.0.0.1/32            md5
-							</code>
+						<pre><code>
+host    all             all             0.0.0.0/0               md5
+# comment the below line
+#host    all             all             127.0.0.1/32            md5
+						</code>
 						</pre>
 					</section><!--//section-->
 				
