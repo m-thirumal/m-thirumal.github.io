@@ -69,7 +69,7 @@
 		    <nav id="docs-nav" class="docs-nav navbar">
 			    <ul class="section-items list-unstyled nav flex-column pb-3">
 				    <li class="nav-item section-title"><a class="nav-link scrollto active" href="#section-1"><span class="theme-icon-holder mr-2"><i class="fas fa-map-signs"></i></span>Pagination</a></li>
-				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-1">Offset & Limit</a></li>
+				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-1">Offset, Limit & ORDER BY</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-2">Count(*)</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-3">Count(*) Alternative</a></li>
 					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-4">Pagination in single query</a></li> 
@@ -117,19 +117,20 @@
 						
 				    </header>
 				    <section class="docs-section" id="item-1-1">
-						<h2 class="section-heading">OFFSET & LIMIT</h2>
+						<h2 class="section-heading">OFFSET, LIMIT & ORDER BY</h2>
 						<p>One way of achiving Pagination is using <code>OFFSET & LIMIT</code></p>
 						<pre><code>
-OFFSET = PAGE<br>LIMIT = SIZE<br>Eg:<br>SELECT * FROM public.employee OFFSET 0 LIMIT 50
+OFFSET = PAGE<br>LIMIT = SIZE<br>Eg:<br>SELECT * FROM public.employee OFFSET 0 LIMIT 50<br>SELECT * FROM public.employee ORDER BY employee_id DESC OFFSET 0 LIMIT 50
 						</code></pre>
 						
 					</section><!--//section-->
 					
 					<section class="docs-section" id="item-1-2">
-						<h2 class="section-heading">Shared Buffers</h2>
-						<p>The <i>shared_buffers</i> configuration parameter determines how much memory is dedicated to PostgreSQL to use for caching data. </p>
-						 <p>If this value is too low, the database would use more disk, which would cause more slowness, but if it is too high, could generate high memory utilization.</p>
-						 <p>According to the documentation, if you have a dedicated database server with <code>1GB or more of RAM</code>, a reasonable starting value for <code>shared_buffers is 25%</code> of the memory in your system.</p>						
+						<h2 class="section-heading">COUNT(*)</h2>
+						<p>As a part of pagination, often we need to display how many records/rows are available in the table</p>
+						<p>Default way to get the count is <pre><code>COUNT(*)</code></pre></p>
+						<p>Eg:</p>
+						<pre><code>SELECT COUNT(*) FROM public.employee</code></pre>
 						<div class="callout-block callout-block-warning">
                             <div class="content">
                                 <h4 class="callout-title">
@@ -138,13 +139,26 @@ OFFSET = PAGE<br>LIMIT = SIZE<br>Eg:<br>SELECT * FROM public.employee OFFSET 0 L
 		                            </span><!--//icon-holder-->
 	                                Warning
 	                            </h4>
-                                <p> Be aware that if your system or PostgreSQL build is <code>32-bit</code>, it might not be practical to set <code>shared_buffers above 2 ~ 2.5GB.</code></p>
+                                <p>COUNT(*) is so slow on PostgreSQL. It has to calculate the result before it knows how many rows it will contain. COUNT(*) will normally perform a sequential scan of the table, which can be quite expensive.</p>
                             </div><!--//content-->
-                        </div><!--//callout-block-->
+						</div><!--//callout-block-->
+						<div class="callout-block callout-block-danger mr-1">
+                            <div class="content">
+                                <h4 class="callout-title">
+	                                <span class="callout-icon-holder">
+		                                <i class="fas fa-exclamation-triangle"></i>
+		                            </span><!--//icon-holder-->
+	                                Mis-Conception
+	                            </h4>
+								<p>The “*” in <code>SELECT * FROM </code> is expanded to all columns. Consequently, many people think that using <code>count(*) is inefficient</code> and should be written <code>count(id) or count(1)</code> instead.</p>
+								<p>But the “*” in <code>count(*)</code> is quite different, it just means <code>“row”</code> and is not expanded at all (actually, that is a <code>“zero-argument aggregate”</code>). <br><br>Writing <code>count(1) or count(id) are actually slower than count(*)</code>, because they have to test if the argument IS NULL or not (count, like most aggregates, ignores NULL arguments).</p>
+								<p>So there is nothing to be gained by avoiding the “*".</p>
+                            </div><!--//content-->
+                        </div><!--//callout-block-
 					</section><!--//section-->
 					
  					<section class="docs-section" id="item-1-3">
-						<h2 class="section-heading">Count(*) Alternative</h2>
+						<h2 class="section-heading">Alternative to Count(*) </h2>
 						<pre><code>SELECT reltuples::bigint FROM pg_catalog.pg_class WHERE relname = 'mytable';</code></pre>
 						<pre><code>SELECT reltuples::bigint AS count FROM pg_class WHERE oid = 'public.mytable'::regclass;</code></pre>
 					</section>
