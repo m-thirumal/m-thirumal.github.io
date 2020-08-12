@@ -71,9 +71,9 @@
 				    <li class="nav-item section-title"><a class="nav-link scrollto active" href="#section-1"><span class="theme-icon-holder mr-2"><i class="fas fa-map-signs"></i></span>Pagination</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-1">Offset, Limit & ORDER BY</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-2">Count(*)</a></li>
-				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-3">Count(*) Alternative</a></li>
+				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-3">Alternative to Count(*)</a></li>
 					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-4">Pagination in single query</a></li> 
-					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-5">temp_buffers</a></li> 
+					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-5">CTE (WITH clauses)</a></li> 
 					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-6">maintenance_work_mem</a></li> 
 					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-7">autovacuum_work_mem</a></li> 
 					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-8">wal_buffers</a></li> 
@@ -118,11 +118,11 @@
 				    </header>
 				    <section class="docs-section" id="item-1-1">
 						<h2 class="section-heading">OFFSET, LIMIT & ORDER BY</h2>
-						<p>One way of achiving Pagination is using <code>OFFSET & LIMIT</code></p>
+						<p>One way to achive Pagination is using <code>OFFSET, LIMIT & ORDER BY</code></p>
 						<pre><code>
 OFFSET = PAGE<br>LIMIT = SIZE<br>Eg:<br>SELECT * FROM public.employee OFFSET 0 LIMIT 50<br>SELECT * FROM public.employee ORDER BY employee_id DESC OFFSET 0 LIMIT 50
 						</code></pre>
-						
+						<p><code>ORDER BY</code> will give an expected result</p>
 					</section><!--//section-->
 					
 					<section class="docs-section" id="item-1-2">
@@ -159,33 +159,69 @@ OFFSET = PAGE<br>LIMIT = SIZE<br>Eg:<br>SELECT * FROM public.employee OFFSET 0 L
 					
  					<section class="docs-section" id="item-1-3">
 						<h2 class="section-heading">Alternative to Count(*) </h2>
+						<p>Often an approximation is good enough and you don’t need the exact count. In that case you can use the estimate that PostgreSQL uses for query planning:</p>
 						<pre><code>SELECT reltuples::bigint FROM pg_catalog.pg_class WHERE relname = 'mytable';</code></pre>
 						<pre><code>SELECT reltuples::bigint AS count FROM pg_class WHERE oid = 'public.mytable'::regclass;</code></pre>
+						<p>This value is updated by both autovacuum and autoanalyze, so it should never be much more than 10% off.<br> You can reduce autovacuum_analyze_scale_factor for that table so that autoanalyze runs more often there.</p>
 					</section>
 				   <section class="docs-section" id="item-1-4"> 
 						<h2 class="section-heading">Pagination in a Single Query</h2>
-						<p>Total count of table without any condition</p>
+						<p>Row without any condition</p>
 						<pre><code>
 WITH n_cnt AS (
-	SELECT reltuples::bigint AS count FROM pg_class WHERE oid = 'public.news'::regclass;
+	SELECT reltuples::bigint AS count FROM pg_class WHERE oid = 'public.employee'::regclass;
 )
-SELECT *, (SELECT count FROM n_cnt) FROM public.news OFFSET 0 LIMIT 10</code></pre>
-					<p>Count of table with conditions</p>
+SELECT *, (SELECT count FROM n_cnt) FROM public.employee OFFSET 0 LIMIT 10</code></pre>
+					<p>Row with complicate conditions</p>
 					<pre><code>
 WITH e_cnt as (
     SELECT count(*) cnt FROM public.employee AS e WHERE e.employer_id = 7 
 )
 SELECT *, (SELECT cnt FROM e_cnt) FROM public.employee e WHERE e.employer_id = 7 OFFSET 0 LIMIT 10
 					</code></pre>
+					<p><code>WITH (clause) CTE</code> query gives better performance than window function<code>COUNT(*) OVER()</code></p>
+					<pre><code>
+SELECT *, COUNT(*) OVER() from EMPLOYEE e where e.employer_id = ? OFFSET 0 LIMIT 25
+					</code></pre>
 					</section>
 					<section class="docs-section" id="item-1-5"> 
-					    <h2 class="section-heading">temp_buffers</h2>
-						<p>The temporary buffers are used to store the temporary tables used in each session.</p>
-						<p>This parameter sets the maximum amount of memory for this task.</p>
-						<p>The default value is <code>8 MB.</code></p>
+					    <h2 class="section-heading">CTE (WITH clauses)</h2>
+						<p>A common table expression (CTE) can be seen as a <code>view </code>that is only valid for a <code>single query</code></p>
+						<p>This could also be written as a subquery in FROM, but there are some advantages to using CTEs:</p>
+						<ul>
+							<li>The query becomes more readable.</li>
+							<li>You can reference the CTE several times in the query, and it will be calculated only once.</li>
+							<li>You can use data modifying statements in the CTE (typically with a RETURNING clause).</li>
+						</ul>
+						<div class="callout-block callout-block-info">
+                            
+                            <div class="content">
+                                <h4 class="callout-title">
+	                                <span class="callout-icon-holder mr-1">
+		                                <i class="fas fa-info-circle"></i>
+		                            </span><!--//icon-holder-->
+	                                Note
+	                            </h4>
+                                <p>Note that before v12, PostgreSQL always materialized CTEs. That means, the CTE was calculated independently from the containing query. From v12 on, CTEs can be “inlined” into the query, which provides further optimization potential.</p>
+                            </div><!--//content-->
+						</div><!--//callout-block-->
+						<pre><code>
+WITH RECURSIVE fib AS (
+	SELECT 1 AS n,
+			1::bigint AS "fib",
+			1::bigint AS "fib+1"
+	UNION ALL
+	SELECT n+1,
+			"fib+1",
+			"fib" + "fib+1"
+	FROM fib
+)
+SELECT n, "fib" FROM fib
+LIMIT 20;
+						</code></pre>
 					</section>
 					<section class="docs-section" id="item-1-6"> 
-					    <h2 class="section-heading">maintenance_work_mem</h2>
+					    <h2 class="section-heading">RECURSIVE in CTE</h2>
 						<p>Specifies the maximum amount of memory to be used by maintenance operations, such as <code>VACUUM, CREATE INDEX, and ALTER TABLE ADD FOREIGN KEY</code></p>
 						<p>Since only one of these operations can be executed at a time by a database session, and an installation normally doesn't have many of them running concurrently, it's safe to set this value significantly larger than work_mem.</p>
 						<p>Larger settings might improve performance for vacuuming and for restoring database dumps.</p>
