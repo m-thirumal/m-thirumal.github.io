@@ -152,16 +152,20 @@
 						<pre><code>SELECT reltuples::bigint AS count FROM pg_class WHERE oid = 'public.mytable'::regclass;</code></pre>
 					</section>
 				   <section class="docs-section" id="item-1-4"> 
-					    <h2 class="section-heading">Pagination in a Single Query</h2>
+						<h2 class="section-heading">Pagination in a Single Query</h2>
+						<p>Total count of table without any condition</p>
 						<pre><code>
-							with e_cnt as (
-								SELECT reltuples::bigint AS count FROM pg_class WHERE oid = 'public.news'::regclass;
-							)
-							select *, (select cnt from e_cnt)
-							from indsolv.party_party_relationship e
-							where e.party_relationship_type_cd = 7 
-							offset 0 
-							limit 10</code></pre>
+WITH n_cnt AS (
+	SELECT reltuples::bigint AS count FROM pg_class WHERE oid = 'public.news'::regclass;
+)
+SELECT *, (SELECT count FROM n_cnt) FROM public.news OFFSET 0 LIMIT 10</code></pre>
+					<p>Count of table with conditions</p>
+					<pre><code>
+WITH e_cnt as (
+    SELECT count(*) cnt FROM public.employee AS e WHERE e.employer_id = 7 
+)
+SELECT *, (SELECT cnt FROM e_cnt) FROM public.employee e WHERE e.employer_id = 7 OFFSET 0 LIMIT 10
+					</code></pre>
 					</section>
 					<section class="docs-section" id="item-1-5"> 
 					    <h2 class="section-heading">temp_buffers</h2>
