@@ -69,11 +69,11 @@
 		    <nav id="docs-nav" class="docs-nav navbar">
 			    <ul class="section-items list-unstyled nav flex-column pb-3">
 				    <li class="nav-item section-title"><a class="nav-link scrollto active" href="#section-1"><span class="theme-icon-holder mr-2"><i class="fas fa-map-signs"></i></span>CTE</a></li>
-				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-1">Offset, Limit & ORDER BY</a></li>
-				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-2">Count(*)</a></li>
+				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-1">CTE (WITH clauses)</a></li>
+				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-2">RECURSIVE</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-3">Alternative to Count(*)</a></li>
 					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-4">Pagination in single query</a></li> 
-					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-5">CTE (WITH clauses)</a></li> 
+					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-5"></a></li> 
 					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-6">maintenance_work_mem</a></li> 
 					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-7">autovacuum_work_mem</a></li> 
 					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-8">wal_buffers</a></li> 
@@ -85,52 +85,61 @@
 		    <div class="container">
 			    <article class="docs-article" id="section-1">
 				    <header class="docs-header">
-					    <h1 class="docs-heading">Pagination<span class="docs-time">Last updated: 2020-08-12</span></h1>
+					    <h1 class="docs-heading">CTE [Common Table Expression]<span class="docs-time">Last updated: 2020-08-13</span></h1>
 					    <section class="docs-intro">
-							<p>Pagination will reduce the weight of the page at the client and the query cost on the database.</p>
-							<div class="callout-block callout-block-success">
-								<div class="content">
-									<h4 class="callout-title">
-										&#128003 In real world, we only need to load 20 or 30 items instead of millions
-									</h4>
-									
-								</div><!--//content-->
-							</div><!--//callout-blo
-							<ul>
-								<li>Local Memory
-									<ul>
-										<li><a class="scrollto" href="#item-1-3">work_mem</a></li>
-										<li><a class="scrollto" href="#item-1-6">maintenance_work_mem</a></li> 
-										<li><a class="scrollto" href="#item-1-5">temp_buffers</a></li> 
-									</ul>
-								</li>
-
-								<li>Shared Memory
-									<ul>
-										<li><a class="scrollto" href="#item-1-2">shared_buffers</a></li>
-										<li><a class="scrollto" href="#item-1-8">wal_buffers</a></li> 
-										<li>   Commit log</li>
-									</ul>
-								</li>
-							</ul>
-						</section><!--//docs-intro-->
-						
+							<p>A common table expression (CTE) can be seen as a <code>view </code>that is only valid for a <code>single query</code></p>
+							</p>
+							<h6>Some advantages to using CTEs</h6>
+							<ol>
+								<li>The query becomes more readable.</li>
+								<li>You can reference the CTE several times in the query, and it will be calculated only once.</li>
+								<li>You can use data modifying statements in the CTE (typically with a RETURNING clause).</li>
+							</ol>
+					    </section>
 				    </header>
 				    <section class="docs-section" id="item-1-1">
-						<h2 class="section-heading">OFFSET, LIMIT & ORDER BY</h2>
-						<p>One way to achive Pagination is using <code>OFFSET, LIMIT & ORDER BY</code></p>
+						<h2 class="section-heading">CTE (WITH clauses)</h2>						
+						<p>CTE could also be written as a subquery in FROM, </p>						
+						<div class="callout-block callout-block-info">
+                            
+                            <div class="content">
+                                <h4 class="callout-title">
+	                                <span class="callout-icon-holder mr-1">
+		                                <i class="fas fa-info-circle"></i>
+		                            </span><!--//icon-holder-->
+	                                Note
+	                            </h4>
+                                <p>Note that before v12, PostgreSQL always materialized CTEs. That means, the CTE was calculated independently from the containing query. From v12 on, CTEs can be “inlined” into the query, which provides further optimization potential.</p>
+                            </div><!--//content-->
+						</div><!--//callout-block-->
 						<pre><code>
-OFFSET = PAGE<br>LIMIT = SIZE<br>Eg:<br>SELECT * FROM public.employee OFFSET 0 LIMIT 50<br>SELECT * FROM public.employee ORDER BY employee_id DESC OFFSET 0 LIMIT 50
+WITH RECURSIVE fib AS (
+	SELECT 1 AS n,
+			1::bigint AS "fib",
+			1::bigint AS "fib+1"
+	UNION ALL
+	SELECT n+1,
+			"fib+1",
+			"fib" + "fib+1"
+	FROM fib
+)
+SELECT n, "fib" FROM fib
+LIMIT 20;
 						</code></pre>
-						<p><code>ORDER BY</code> will give an expected result</p>
 					</section><!--//section-->
 					
 					<section class="docs-section" id="item-1-2">
-						<h2 class="section-heading">COUNT(*)</h2>
-						<p>As a part of pagination, often we need to display how many records/rows are available in the table</p>
-						<p>Default way to get the count is <pre><code>COUNT(*)</code></pre></p>
-						<p>Eg:</p>
-						<pre><code>SELECT COUNT(*) FROM public.employee</code></pre>
+						<h2 class="section-heading">RECURSIVE</h2>
+						<p>Recursive queries are written using recursive CTEs, that are CTEs containing the RECURSIVE keyword</p>
+						<pre><code>
+WITH RECURSIVE ctename AS (
+	SELECT /* non-recursive branch, cannot reference "ctename" */
+	UNION [ALL]
+	SELECT /* recursive branch referencing "ctename" */
+	)
+	SELECT ...
+	FROM ctename ...
+						</code></pre>
 						<div class="callout-block callout-block-warning">
                             <div class="content">
                                 <h4 class="callout-title">

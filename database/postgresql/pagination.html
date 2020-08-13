@@ -68,15 +68,16 @@
             </div>
 		    <nav id="docs-nav" class="docs-nav navbar">
 			    <ul class="section-items list-unstyled nav flex-column pb-3">
-				    <li class="nav-item section-title"><a class="nav-link scrollto active" href="#section-1"><span class="theme-icon-holder mr-2"><i class="fas fa-map-signs"></i></span>Pagination</a></li>
+				    <li class="nav-item section-title"><a class="nav-link scrollto active" href="#section-1"><span class="theme-icon-holder mr-2"><i class="fas fa-map-signs"></i></span>SQL Pagination</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-1">Offset, Limit & ORDER BY</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-2">Count(*)</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-3">Alternative to Count(*)</a></li>
-					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-4">Pagination in single query</a></li> 
-					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-5">CTE (WITH clauses)</a></li> 
-					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-6">maintenance_work_mem</a></li> 
-					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-7">autovacuum_work_mem</a></li> 
-					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-8">wal_buffers</a></li> 
+					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-4">Pagination in single query</a></li>
+					<li class="nav-item section-title"><a class="nav-link scrollto active" href="#section-2"><span class="theme-icon-holder mr-2"><i class="fas fa-map-signs"></i></span>Application Pagination</a></li>
+					<li class="nav-item"><a class="nav-link scrollto" href="#item-2-1">Pagination with Single Query</a></li> 
+					<li class="nav-item"><a class="nav-link scrollto" href="#item-2-2">Pagination with distributed Cache</a></li> 
+					<li class="nav-item"><a class="nav-link scrollto" href="#item-2-3">Pagination With in-memory Cache</a></li> 
+					<li class="nav-item"><a class="nav-link scrollto" href="#item-2-4">Separate table for Pagination</a></li> 
 			    </ul>
 
 		    </nav><!--//docs-nav-->
@@ -85,9 +86,9 @@
 		    <div class="container">
 			    <article class="docs-article" id="section-1">
 				    <header class="docs-header">
-					    <h1 class="docs-heading">Pagination<span class="docs-time">Last updated: 2020-08-12</span></h1>
+					    <h1 class="docs-heading">Pagination in SQL<span class="docs-time">Last updated: 2020-08-13</span></h1>
 					    <section class="docs-intro">
-							<p>Pagination will reduce the weight of the page at the client and the query cost on the database.</p>
+							<p> &#127795 Pagination will reduce the weight of the page at the client and the query cost on the database.</p>
 							<div class="callout-block callout-block-success">
 								<div class="content">
 									<h4 class="callout-title">
@@ -95,41 +96,21 @@
 									</h4>
 									
 								</div><!--//content-->
-							</div><!--//callout-blo
-							<ul>
-								<li>Local Memory
-									<ul>
-										<li><a class="scrollto" href="#item-1-3">work_mem</a></li>
-										<li><a class="scrollto" href="#item-1-6">maintenance_work_mem</a></li> 
-										<li><a class="scrollto" href="#item-1-5">temp_buffers</a></li> 
-									</ul>
-								</li>
-
-								<li>Shared Memory
-									<ul>
-										<li><a class="scrollto" href="#item-1-2">shared_buffers</a></li>
-										<li><a class="scrollto" href="#item-1-8">wal_buffers</a></li> 
-										<li>   Commit log</li>
-									</ul>
-								</li>
-							</ul>
-						</section><!--//docs-intro-->
-						
+							</div>						
 				    </header>
 				    <section class="docs-section" id="item-1-1">
 						<h2 class="section-heading">OFFSET, LIMIT & ORDER BY</h2>
-						<p>One way to achive Pagination is using <code>OFFSET, LIMIT & ORDER BY</code></p>
+						<p>One way to achive Pagination in SQL is using <code>OFFSET, LIMIT & ORDER BY</code></p>
 						<pre><code>
-OFFSET = PAGE<br>LIMIT = SIZE<br>Eg:<br>SELECT * FROM public.employee OFFSET 0 LIMIT 50<br>SELECT * FROM public.employee ORDER BY employee_id DESC OFFSET 0 LIMIT 50
+OFFSET => PAGE<br>LIMIT => SIZE<br>Eg:<br>SELECT * FROM public.employee OFFSET 0 LIMIT 50<br>SELECT * FROM public.employee ORDER BY employee_id DESC OFFSET 0 LIMIT 50
 						</code></pre>
 						<p><code>ORDER BY</code> will give an expected result</p>
 					</section><!--//section-->
 					
 					<section class="docs-section" id="item-1-2">
 						<h2 class="section-heading">COUNT(*)</h2>
-						<p>As a part of pagination, often we need to display how many records/rows are available in the table</p>
-						<p>Default way to get the count is <pre><code>COUNT(*)</code></pre></p>
-						<p>Eg:</p>
+						<p>As a part of pagination, often we need to display how many records are available in the table</p>
+						<p>Eg: &#127815</p>
 						<pre><code>SELECT COUNT(*) FROM public.employee</code></pre>
 						<div class="callout-block callout-block-warning">
                             <div class="content">
@@ -160,8 +141,9 @@ OFFSET = PAGE<br>LIMIT = SIZE<br>Eg:<br>SELECT * FROM public.employee OFFSET 0 L
  					<section class="docs-section" id="item-1-3">
 						<h2 class="section-heading">Alternative to Count(*) </h2>
 						<p>Often an approximation is good enough and you don’t need the exact count. In that case you can use the estimate that PostgreSQL uses for query planning:</p>
-						<pre><code>SELECT reltuples::bigint FROM pg_catalog.pg_class WHERE relname = 'mytable';</code></pre>
-						<pre><code>SELECT reltuples::bigint AS count FROM pg_class WHERE oid = 'public.mytable'::regclass;</code></pre>
+						<pre><code>
+SELECT reltuples::bigint FROM pg_catalog.pg_class WHERE relname = 'mytable';
+SELECT reltuples::bigint AS count FROM pg_class WHERE oid = 'public.mytable'::regclass;</code></pre>
 						<p>This value is updated by both autovacuum and autoanalyze, so it should never be much more than 10% off.<br> You can reduce autovacuum_analyze_scale_factor for that table so that autoanalyze runs more often there.</p>
 					</section>
 				   <section class="docs-section" id="item-1-4"> 
@@ -184,6 +166,21 @@ SELECT *, (SELECT cnt FROM e_cnt) FROM public.employee e WHERE e.employer_id = 7
 SELECT *, COUNT(*) OVER() from EMPLOYEE e where e.employer_id = ? OFFSET 0 LIMIT 25
 					</code></pre>
 					</section>
+				</article>
+					<article class="docs-article" id="section-2">
+						<header class="docs-header">
+							<h1 class="docs-heading">Pagination in Application<span class="docs-time">Last updated: 2020-08-13</span></h1>
+							<section class="docs-intro">
+								<p> &#127795 Pagination will reduce the weight of the page at the client and the query cost on the database.</p>
+								<div class="callout-block callout-block-success">
+									<div class="content">
+										<h4 class="callout-title">
+											&#128003 In real world, we only need to load 20 or 30 items instead of millions
+										</h4>
+										
+									</div><!--//content-->
+								</div>						
+						</header>
 					<section class="docs-section" id="item-1-5"> 
 					    <h2 class="section-heading">CTE (WITH clauses)</h2>
 						<p>A common table expression (CTE) can be seen as a <code>view </code>that is only valid for a <code>single query</code></p>
