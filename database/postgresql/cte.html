@@ -71,12 +71,8 @@
 				    <li class="nav-item section-title"><a class="nav-link scrollto active" href="#section-1"><span class="theme-icon-holder mr-2"><i class="fas fa-map-signs"></i></span>CTE</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-1">CTE (WITH clauses)</a></li>
 				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-2">RECURSIVE</a></li>
-				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-3">Alternative to Count(*)</a></li>
-					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-4">Pagination in single query</a></li> 
-					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-5"></a></li> 
-					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-6">maintenance_work_mem</a></li> 
-					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-7">autovacuum_work_mem</a></li> 
-					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-8">wal_buffers</a></li> 
+				    <li class="nav-item"><a class="nav-link scrollto" href="#item-1-3">Pagination in single query</a></li>
+					<li class="nav-item"><a class="nav-link scrollto" href="#item-1-4">Example</a></li> 
 			    </ul>
 
 		    </nav><!--//docs-nav-->
@@ -95,7 +91,8 @@
 								<li>You can reference the CTE several times in the query, and it will be calculated only once.</li>
 								<li>You can use data modifying statements in the CTE (typically with a RETURNING clause).</li>
 							</ol>
-					    </section>
+						</section>
+						<a href="pagination.html#item-1-4">Pagination with Single Query</a>
 				    </header>
 				    <section class="docs-section" id="item-1-1">
 						<h2 class="section-heading">CTE (WITH clauses)</h2>						
@@ -140,115 +137,84 @@ WITH RECURSIVE ctename AS (
 	SELECT ...
 	FROM ctename ...
 						</code></pre>
-						<div class="callout-block callout-block-warning">
-                            <div class="content">
-                                <h4 class="callout-title">
-	                                <span class="callout-icon-holder mr-1">
-		                                <i class="fas fa-bullhorn"></i>
-		                            </span><!--//icon-holder-->
-	                                Warning
-	                            </h4>
-                                <p>COUNT(*) is so slow on PostgreSQL. It has to calculate the result before it knows how many rows it will contain. COUNT(*) will normally perform a sequential scan of the table, which can be quite expensive.</p>
-                            </div><!--//content-->
-						</div><!--//callout-block-->
+						
+					</section>
+					
+ 					<section class="docs-section" id="item-1-3">
+						<h2 class="section-heading">How recursive queries are processed</h2>
+						<p>PostgreSQL internally uses a working table to process recursive CTEs. This processing is not really recursive, but rather iterative</p>
+						<p>First, the working table is initialized by executing the non-recursive branch of the CTE. The result of the CTE is also initialized with this result set. If the recursive CTE uses UNION rather than UNION ALL, duplicate rows are removed.</p>
+						<p>Then, PostgreSQL repeats the following until the working table is empty></p>
+						<ul>
+							<li>Evaluate the recursive branch of the CTE, replacing the reference to the CTE with the working table.</li>
+							<li>Add all resulting rows to the CTE result. If UNION is used to combine the branches, discard duplicate rows.</li>
+							<li>Replace the working table with all new rows from the previous step (excluding any removed duplicates).</li>
+						</ul>
 						<div class="callout-block callout-block-danger mr-1">
                             <div class="content">
                                 <h4 class="callout-title">
 	                                <span class="callout-icon-holder">
 		                                <i class="fas fa-exclamation-triangle"></i>
 		                            </span><!--//icon-holder-->
-	                                Mis-Conception
+	                                Danger of an endless loop
 	                            </h4>
-								<p>The “*” in <code>SELECT * FROM </code> is expanded to all columns. Consequently, many people think that using <code>count(*) is inefficient</code> and should be written <code>count(id) or count(1)</code> instead.</p>
-								<p>But the “*” in <code>count(*)</code> is quite different, it just means <code>“row”</code> and is not expanded at all (actually, that is a <code>“zero-argument aggregate”</code>). <br><br>Writing <code>count(1) or count(id) are actually slower than count(*)</code>, because they have to test if the argument IS NULL or not (count, like most aggregates, ignores NULL arguments).</p>
-								<p>So there is nothing to be gained by avoiding the “*".</p>
+								<p>If the iteration never ends, the query will just keep running until the result table becomes big enough to cause an error. There are two ways to deal with that</p>
+								<ul>
+									<li>Often you can avoid infinite recursion by using UNION, which removes duplicate result rows (but of course requires extra processing effort).</li>
+									<li>Another way is to place a LIMIT clause on the query that uses the CTE, because PostgreSQL stops processing if the recursive CTE has calculated as many rows as are fetched by the parent query. Not that this technique is not portable to other standard compliant databases.</li>
+								</ul>
                             </div><!--//content-->
-                        </div><!--//callout-block-
-					</section><!--//section-->
-					
- 					<section class="docs-section" id="item-1-3">
-						<h2 class="section-heading">Alternative to Count(*) </h2>
-						<p>Often an approximation is good enough and you don’t need the exact count. In that case you can use the estimate that PostgreSQL uses for query planning:</p>
-						<pre><code>SELECT reltuples::bigint FROM pg_catalog.pg_class WHERE relname = 'mytable';</code></pre>
-						<pre><code>SELECT reltuples::bigint AS count FROM pg_class WHERE oid = 'public.mytable'::regclass;</code></pre>
-						<p>This value is updated by both autovacuum and autoanalyze, so it should never be much more than 10% off.<br> You can reduce autovacuum_analyze_scale_factor for that table so that autoanalyze runs more often there.</p>
+                        </div><!--//callout-block-->
+                        
 					</section>
 				   <section class="docs-section" id="item-1-4"> 
-						<h2 class="section-heading">Pagination in a Single Query</h2>
-						<p>Row without any condition</p>
+						<h2 class="section-heading">Example</h2>
+						<a href="pagination.html#item-1-4">Pagination with Single Query</a>
+						<p>Adding generated columns</p>
 						<pre><code>
-WITH n_cnt AS (
-	SELECT reltuples::bigint AS count FROM pg_class WHERE oid = 'public.employee'::regclass;
+WITH RECURSIVE ctename AS (
+      SELECT empno, ename,
+             0 AS level
+      FROM emp
+      WHERE empno = 1
+   UNION ALL
+      SELECT emp.empno, emp.ename,
+             ctename.level + 1
+      FROM emp
+         JOIN ctename ON emp.mgr = ctename.empno
 )
-SELECT *, (SELECT count FROM n_cnt) FROM public.employee OFFSET 0 LIMIT 10</code></pre>
-					<p>Row with complicate conditions</p>
+SELECT * FROM ctename;
+
+empno | ename | level
+-------+-------+-------
+  1 | Thirumal |     0
+  2 | Jack     |     1
+  3 | Smith    |     2
+</code></pre>
+					<p>Get the path</p>
 					<pre><code>
-WITH e_cnt as (
-    SELECT count(*) cnt FROM public.employee AS e WHERE e.employer_id = 7 
-)
-SELECT *, (SELECT cnt FROM e_cnt) FROM public.employee e WHERE e.employer_id = 7 OFFSET 0 LIMIT 10
-					</code></pre>
-					<p><code>WITH (clause) CTE</code> query gives better performance than window function<code>COUNT(*) OVER()</code></p>
-					<pre><code>
-SELECT *, COUNT(*) OVER() from EMPLOYEE e where e.employer_id = ? OFFSET 0 LIMIT 25
-					</code></pre>
-					</section>
-					<section class="docs-section" id="item-1-5"> 
-					    <h2 class="section-heading">CTE (WITH clauses)</h2>
-						<p>A common table expression (CTE) can be seen as a <code>view </code>that is only valid for a <code>single query</code></p>
-						<p>This could also be written as a subquery in FROM, but there are some advantages to using CTEs:</p>
-						<ul>
-							<li>The query becomes more readable.</li>
-							<li>You can reference the CTE several times in the query, and it will be calculated only once.</li>
-							<li>You can use data modifying statements in the CTE (typically with a RETURNING clause).</li>
-						</ul>
-						<div class="callout-block callout-block-info">
-                            
-                            <div class="content">
-                                <h4 class="callout-title">
-	                                <span class="callout-icon-holder mr-1">
-		                                <i class="fas fa-info-circle"></i>
-		                            </span><!--//icon-holder-->
-	                                Note
-	                            </h4>
-                                <p>Note that before v12, PostgreSQL always materialized CTEs. That means, the CTE was calculated independently from the containing query. From v12 on, CTEs can be “inlined” into the query, which provides further optimization potential.</p>
-                            </div><!--//content-->
-						</div><!--//callout-block-->
-						<pre><code>
-WITH RECURSIVE fib AS (
-	SELECT 1 AS n,
-			1::bigint AS "fib",
-			1::bigint AS "fib+1"
+WITH RECURSIVE ctename AS (
+	SELECT empno, ename,
+			ename AS path
+	FROM emp
+	WHERE empno = 1
 	UNION ALL
-	SELECT n+1,
-			"fib+1",
-			"fib" + "fib+1"
-	FROM fib
+	SELECT emp.empno, emp.ename,
+			ctename.path || ' -> ' || emp.ename
+	FROM emp
+		JOIN ctename ON emp.mgr = ctename.empno
 )
-SELECT n, "fib" FROM fib
-LIMIT 20;
-						</code></pre>
-					</section>
-					<section class="docs-section" id="item-1-6"> 
-					    <h2 class="section-heading">RECURSIVE in CTE</h2>
-						<p>Specifies the maximum amount of memory to be used by maintenance operations, such as <code>VACUUM, CREATE INDEX, and ALTER TABLE ADD FOREIGN KEY</code></p>
-						<p>Since only one of these operations can be executed at a time by a database session, and an installation normally doesn't have many of them running concurrently, it's safe to set this value significantly larger than work_mem.</p>
-						<p>Larger settings might improve performance for vacuuming and for restoring database dumps.</p>
-						<p>The default value is <code>64 MB.</code></p>
-					</section>
-					<section class="docs-section" id="item-1-7"> 
-					    <h2 class="section-heading">autovacuum_work_mem</h2>
-						<p>The vacuum uses the maintenance_work_mem by default, but we can separate it using this parameter.</p>
-						<p>We can specify the maximum amount of memory to be used by each autovacuum worker here.</p>
-					</section>
-					<section class="docs-section" id="item-1-8"> 
-					    <h2 class="section-heading">wal_sync_method & wal_buffers</h2>
-						<p>The amount of shared memory used for WAL data that has not yet been written to disk. </p>
-						<p>The default setting is <code>3% or 1/32 </code>of shared_buffers, but not less than <code>64kB</code> nor more than the size of one WAL segment, typically <code>16MB.</code></p>
-						<p>Larger settings might improve performance for vacuuming and for restoring database dumps.</p>
-						<p>The default value is <code>64 MB.</code></p>
+SELECT * FROM ctename;
+	
+empno | ename |          path          
+-------+-------+------------------------
+1 | Thirumal | Thirumal
+2 | Jack     | Thirumal -> Jack
+3 | Smith    | Thirumal -> Jack -> Smith
+					</code></pre>
 					</section>
 					
+				
 			    </article>
 			    
 			   
