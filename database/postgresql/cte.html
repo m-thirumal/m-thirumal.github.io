@@ -130,11 +130,10 @@ LIMIT 20;
 						<p>Recursive queries are written using recursive CTEs, that are CTEs containing the RECURSIVE keyword</p>
 						<pre><code>
 WITH RECURSIVE ctename AS (
-	SELECT /* non-recursive branch, cannot reference "ctename" */
+	SELECT --- non-recursive branch, cannot reference "ctename"
 	UNION [ALL]
-	SELECT /* recursive branch referencing "ctename" */
-	)
-	SELECT ...
+	SELECT --recursive branch referencing "ctename" 
+) SELECT ...
 	FROM ctename ...
 						</code></pre>
 						
