@@ -171,6 +171,27 @@ WITH RECURSIVE ctename AS (
 						<a href="pagination.html#item-1-4">Pagination with Single Query</a>
 						<p>Adding generated columns</p>
 						<pre><code>
+WITH RECURSIVE tens (n) AS (
+	SELECT 10
+	UNION ALL
+	SELECT n+10 FROM tens WHERE n+10<= 100
+)
+SELECT n FROM tens;
+n
+-----
+	10
+	20
+	30
+	40
+	50
+	60
+	70
+	80
+	90
+	100
+(10 rows)							
+						</code></pre>
+						<pre><code>
 WITH RECURSIVE ctename AS (
       SELECT empno, ename,
              0 AS level
