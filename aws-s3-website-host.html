@@ -88,6 +88,7 @@
 					<li class="nav-item"><a class="nav-link scrollto" href="#item-5-4">Select SSL Certificate</a></li>
 					<li class="nav-item"><a class="nav-link scrollto" href="#item-5-5">CNAME in Route53</a></li>
 					<li class="nav-item"><a class="nav-link scrollto" href="#item-5-6">Set up Sub-Domain</a></li>
+					<li class="nav-item"><a class="nav-link scrollto" href="#item-5-7">Re-Deploy [Clear Cache]</a></li>
 					<li class="nav-item section-title mt-3"><a class="nav-link scrollto" href="#section-6"><span class="theme-icon-holder mr-2"><i class="fas fa-tools"></i></span>FAQ</a></li>
 			    </ul>
 
@@ -290,6 +291,12 @@
 						<li><a class="nav-link scrollto" href="#item-5-1">Create new distribution similar to www</a></li>
 						<li><a class="nav-link scrollto" href="#item-5-5">Add CNAME to route53/a></li>
 						</ol>
+					</section>
+					<section class="docs-section" id="item-5-7">
+						<h2 class="section-heading">Re-Deploy [Clear Cache]</h2>
+						<p>Re deployment requires clear cache</p>
+						<pre><code>CloudFront Distributions	> "YOUR DISTRIBUTION ID" -> Invalidating -> CREATE -> Enter * or /*</code></pre>
+						<img src="aws/img/clear_cache.png" width="1050" height="550"/>
 					</section>
 			    </article><!--//docs-article-->
 			    
